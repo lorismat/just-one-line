@@ -19,6 +19,9 @@ const props = defineProps({
   },
   trigger: {
     type: Number
+  }, 
+  cameraZ: {
+    type: Number
   }
 })
 
@@ -37,6 +40,8 @@ let scene, renderer, camera;
 let materialPlane;
 
 let frame = 0;
+let initValue = 0;
+let clock;
 
 const width = 500;
 const height = 500;
@@ -71,7 +76,7 @@ function init() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   // plane
-  const geometryPlane = new THREE.PlaneGeometry(10,10);
+  const geometryPlane = new THREE.PlaneGeometry(50,50);
   materialPlane = new THREE.ShaderMaterial({
     vertexShader,
     fragmentShader,
@@ -83,35 +88,38 @@ function init() {
   plane.position.set(0, 0, 0);
   scene.add(plane);
 
-  camera.position.set(0, 0, 7);
+  camera.position.set(0, 0, props.cameraZ);
   camera.lookAt( scene.position );
 
   const controls = new OrbitControls( camera, renderer.domElement );
 
   stats = new Stats();
-  document.body.appendChild( stats.dom );
+  // document.body.appendChild( stats.dom );
 
   if (props.record != 'not-recording') {
     capturer = new CCapture(JSON.parse(JSON.stringify(props.recordConfig)));
     console.log(JSON.parse(JSON.stringify(props.recordConfig))) 
     capturer.start();
   }
+
+  clock = new THREE.Clock();
 }
 
 function animate() {
-  
-  // requestID = requestAnimationFrame(animate);
-  requestAnimationFrame(animate);
-  frame+=1;
-  const time = - performance.now() * 0.001;
-  materialPlane.uniforms.u_time.value = time;
 
+  requestAnimationFrame(animate);
+  const time = - performance.now() * 0.001;
+
+  materialPlane.uniforms.u_time.value = time;
   renderer.render(scene, camera);
   stats.update();
 
   if (props.record != 'not-recording' && recordingStop < 1) {
+    // start and initiate the clock
+    const delta = clock.getElapsedTime();
     capturer.capture(canvas);
-    if (frame > props.stopFrame) {
+    // one cycle output goes from 0 to 2*PI
+    if ( delta > 2*Math.PI ) {
       capturer.stop();
       capturer.save();
       recordingStop++;

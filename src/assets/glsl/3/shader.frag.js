@@ -38,22 +38,21 @@ float noise(vec2 st) {
 }
 
 float line (vec2 st, float position, float thickness, vec3 colorH) {
-  float t = abs(1.0-sin(u_time*2.));
-  float noisyPos = noise(st*10.);
-  position *= noisyPos * 46. * t;
-  // return step(1.- position, st.y) + 1. - step(1. - position - thickness * random(vec2(st.y)), st.y);
+  float t = abs(1.0-sin(u_time*3.));
+  float noisyPos = noise(st*3.);
+  position *= noisyPos * 1. * t;
   float fi = smoothstep(1.- position - 0.01, 1.- position, st.y) 
     + 1. - smoothstep(1. - position - thickness - 0.01, 1. - position - thickness, st.y);
   return fi + colorH.x;
 }
 
-
 void main () {
+
   vec2 st = vUv;
   vec3 color = vec3(1.0);
   vec3 colorH = hsb2rgb(vec3(0.078,0.630,0.216));
-  color *= line(st, random(vec2(1.,1.)), 1., colorH);
-  color.x += -0.432;
+  color *= line(st*10., random(vec2(2.,1.)), 0.4, colorH);
+  color.x += 0.1;
   gl_FragColor = vec4(color, 1.0);
 }
 `;

@@ -1,9 +1,6 @@
 export default /* glsl */`
 
 
-
-
-
 // #ifdef GL_ES
 // precision mediump float;
 // #endif
@@ -38,30 +35,13 @@ float noise(vec2 st) {
                     dot( random2(i + vec2(1.0,1.0) ), f - vec2(1.0,1.0) ), u.x), u.y);
 }
 
-float line2 (vec2 st, float position, float thickness, vec3 colorH) {
-  float t = abs(1.0-sin(u_time));
-  float noisyPos = noise(st*1.);
-  position *= noisyPos * 1. * t;
-  float fi = step(1.- position, st.y) + 1. - step(1. - position - thickness, st.y);
-  return fi + colorH.x;
-}
-
-vec3 line (vec2 st, float position, float thickness) {
-  vec3 line = vec3(step(1.- position, st.y) + 
-                   1. - step(1. - position - thickness, st.y));
-  return line;
-}
-
 vec3 modified (vec2 st, float position, float thickness) {
-
-  // modifier
-  float t = abs(1.0-sin(u_time));
-  float noisyPos = noise(st * 10. + 9.);
-  position += noisyPos * t;
-
-  // smooth line
-  vec3 line = vec3(smoothstep(1.- position - 0.006, 1.- position, st.y) + 
-                   1. - smoothstep(1. - position - thickness - 0.006, 1. - position - thickness,st.y));
+  float smoothFactor = 0.001;
+  float t = abs(1.0-sin(u_time*1.2)) + 0.5;
+  float noisyPos = noise(st * 20.) * 0.03;
+  position += noisyPos * t * 1.;
+  vec3 line = vec3(smoothstep(1.- position - smoothFactor, 1.- position, st.y) + 
+                   1. - smoothstep(1. - position - thickness - smoothFactor, 1. - position - thickness,st.y));
   return line;
 }
 
@@ -72,16 +52,26 @@ void main () {
   vec2 st = vUv;
 
   // set the background color to green
-  vec3 color = vec3(0.334,0.870,0.066);
+  vec3 color = vec3(0.145,0.128,0.010);
   // set the line color to yellow
-  vec3 colorLine = vec3(0.985,0.754,0.142);
+  vec3 colorLine = vec3(0.985,0.918,0.021);
     
   // set the line
-  // vec3 straightLine = line(st, 0.4, 0.1);
+  // vec3 straightLine = line(st, 0.8, 0.1);
     
-  vec3 modifiedLine = modified(st, 0.4, 0.1);
+  vec3 modifiedLine1 = modified(st, 0.1, 0.01);
+  vec3 modifiedLine2 = modified(st, 0.3, 0.01);
+  vec3 modifiedLine3 = modified(st, 0.5, 0.01);
+  vec3 modifiedLine4 = modified(st, 0.7, 0.01);
+  vec3 modifiedLine5 = modified(st, 0.9, 0.01);
+  vec3 modifiedLine6 = modified(st, 0.6, 0.01);
     
-  color = mix(colorLine, color, modifiedLine);
+  color = mix(colorLine, color, modifiedLine1);
+  color = mix(colorLine, color, modifiedLine2);
+  color = mix(colorLine, color, modifiedLine3);
+  color = mix(colorLine, color, modifiedLine4);
+  color = mix(colorLine, color, modifiedLine5);
+  color = mix(colorLine, color, modifiedLine6);
   gl_FragColor = vec4(color, 1.0);
 }
 

@@ -14,6 +14,14 @@ const state = reactive({
 
 const recordConfig = {};
 const stopFrame = 0;
+const frame = {
+  thin:36, 
+  normal:37,
+  bold:39,
+  extrabold:41,
+  none:35,
+}
+const cameraZ = frame.thin;
 
 function recording(e) {
   const way = e.target.id;
@@ -35,7 +43,7 @@ function recording(e) {
       format: 'gif',
       workersPath: '/'
     }
-    state.stopFrame = 50;
+    state.stopFrame = 184;
     state.record = "recording-gif";
   }
   state.trigger++;
@@ -46,10 +54,18 @@ function initialize(e) {
 }
 
 const prev = computed(() => {
-  return `/${Number(route.params.id) - 1}`
+  let routeReturn;
+  if (route.params.id != undefined && route.params.id != 1 && route.params.id != 2) {
+    routeReturn = `/${Number(route.params.id) - 1}`;
+  } else if (route.params.id == 2){
+    routeReturn = `/`
+  } else {
+    routeReturn = ``
+  }
+  return routeReturn
 })
 const next = computed(() => {
-  return `/${Number(route.params.id) + 1}`
+  return route.params.id != undefined ? `/${Number(route.params.id) + 1}` : `/2`
 })
 </script>
 
@@ -59,18 +75,19 @@ const next = computed(() => {
       Canvas {{ $route.params.id }}
     </div>
     <CanvasThree 
-      :id="$route.params.id"
+      :id="$route.params.id == undefined ? '1' : $route.params.id"
       :record="state.record"
       :recordConfig="state.recordConfig"
       :stopFrame="state.stopFrame"
       :trigger="state.trigger"
+      :cameraZ="cameraZ"
     />
   </div>
 
   <footer>
     <div>
       <nav>
-        <RouterLink @click="initialize" :to="prev">prev</RouterLink>
+        <RouterLink @click="initialize" :to="prev" :style="{'display': prev == '' ? 'none' : 'initial'}">prev</RouterLink>
         <RouterLink @click="initialize" :to="next">next</RouterLink>
       </nav>
     </div>

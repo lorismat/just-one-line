@@ -1,15 +1,13 @@
 export default /* glsl */`
+
+
+// #ifdef GL_ES
+// precision mediump float;
+// #endif
+
 varying vec2 vUv;
 uniform float u_time;
-
-vec3 hsb2rgb( in vec3 c ){
-  vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),
-                            6.0)-3.0)-1.0,
-                    0.0,
-                    1.0 );
-  rgb = rgb*rgb*(3.0-2.0*rgb);
-  return c.z * mix( vec3(1.0), rgb, c.y);
-}
+uniform vec2 u_resolution;
 
 float random (vec2 st) {
   return fract(sin(dot(st.xy,
@@ -37,23 +35,34 @@ float noise(vec2 st) {
                     dot( random2(i + vec2(1.0,1.0) ), f - vec2(1.0,1.0) ), u.x), u.y);
 }
 
-float line (vec2 st, float position, float thickness, vec3 colorH) {
-  float t = abs(1.0-sin(u_time*2.));
-  float noisyPos = noise(st*10.);
-  position *= noisyPos * 46. * t;
-  // return step(1.- position, st.y) + 1. - step(1. - position - thickness * random(vec2(st.y)), st.y);
-  float fi = smoothstep(1.- position - 0.01, 1.- position, st.y) 
-    + 1. - smoothstep(1. - position - thickness - 0.01, 1. - position - thickness, st.y);
-  return fi + colorH.x;
+vec3 modified (vec2 st, float position, float thickness) {
+  float smoothFactor = 0.001;
+  float t = abs(1.0-sin(u_time*1.5));
+  float noisyPos = noise(st * 1.08 + 13.);
+  position += pow(noisyPos,1.5) * t * 2.;
+  vec3 line = vec3(smoothstep(1.- position - smoothFactor, 1.- position, st.y) + 
+                   1. - smoothstep(1. - position - thickness - smoothFactor, 1. - position - thickness,st.y));
+  return line;
 }
-
 
 void main () {
+
+  // vec2 st = gl_FragCoord.xy/u_resolution.xy;
+  // st.x *= u_resolution.x/u_resolution.y;
   vec2 st = vUv;
-  vec3 color = vec3(1.0);
-  vec3 colorH = hsb2rgb(vec3(0.078,0.630,0.216));
-  color *= line(st, random(vec2(1.,1.)), 1., colorH);
-  color.x += -0.432;
+
+  // set the background color to green
+  vec3 color = vec3(0.389,0.474,0.870);
+  // set the line color to yellow
+  vec3 colorLine = vec3(0.985,0.549,0.074);
+    
+  // set the line
+  // vec3 straightLine = line(st, 0.8, 0.1);
+    
+  vec3 modifiedLine = modified(st, 0.2, 0.01);
+    
+  color = mix(colorLine, color, modifiedLine);
   gl_FragColor = vec4(color, 1.0);
 }
+
 `;

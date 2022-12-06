@@ -26,6 +26,11 @@ const router = createRouter({
     },
     // not found
     { 
+      path: '/0', 
+      name: 'route-without-canvas', 
+      component: ErrorView 
+    },
+    { 
       path: '/:pathMatch(.*)*', 
       name: 'default', 
       component: ErrorView 
